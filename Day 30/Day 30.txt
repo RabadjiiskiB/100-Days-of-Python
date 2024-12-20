@@ -4,3 +4,16 @@ except: Do this if there was an exception
 else: Do this if there was no exception
 finally: Do this no matter what
 raise: Trigger an error message
+
+JSON JavaScriptObjectNotation
+
+dump writes data into json
+update appends data to the dict
+load returns dictionary from json
+
+import json
+
+with open("filename", "r/w/a") as f:
+data = json.load(f) with "r"
+data.update(new_data) with "w"
+json.dump(data, file) with filemode "w"

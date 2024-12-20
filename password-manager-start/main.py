@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
+import json
 
-
+EMAIL = "rabadjiiskib@gmail.com"
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def genPass():
 
@@ -29,21 +30,49 @@ def genPass():
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def savePass():
 
+
     if not websiteEntry.get() or not userEntry.get() or not passEntry.get():
         messagebox.showerror(title="Empty field", message="Don't leave empty fields pls")
     else:
         website = websiteEntry.get()
         email = userEntry.get()
         password = passEntry.get()
+        new_data = {
+            website: {
+                'email': email,
+                'password': password,
+            }
+        }
         toSave = messagebox.askokcancel(title=website, message=f"These are the details: \nEmail: {email} \nPassword: {password} \nIs it ok to save?")
         if toSave:
-            with open("passwords.txt", "a") as f:
-                f.write(f"{website} / {email} / {password} \n")
-                websiteEntry.delete(0,'end')
-                userEntry.delete(0,'end')
-                passEntry.delete(0,'end')
+            try:
+                with open("passwords.json", "r") as f:
+                    data = json.load(f)
+                    data.update(new_data)
+            except FileNotFoundError:
+                with open("passwords.json", "w") as f:
+                    json.dump(new_data, f, indent=4)
+                    websiteEntry.delete(0, 'end')
+                    passEntry.delete(0, 'end')
+            else:
+                with open("passwords.json", "w") as f:
+                    json.dump(data, f, indent=4)
+                    websiteEntry.delete(0, 'end')
+                    passEntry.delete(0, 'end')
 
-
+# ---------------------------- PASSWORD SEARCH ------------------------------- #
+def searchPass():
+    website = websiteEntry.get()
+    email = userEntry.get()
+    try:
+        with open("passwords.json", "r") as f:
+            data = json.load(f)
+            try:
+                messagebox.askokcancel(title=website, message=f"These are the details: \nEmail: {data[website]['email']} \nPassword: {data[website]['password']}")
+            except KeyError:
+                messagebox.showerror(title="No such website", message="No such website found")
+    except FileNotFoundError:
+        messagebox.showerror(title="No passwords found", message="No passwords found")
 # ---------------------------- UI SETUP ------------------------------- #
 window = tk.Tk()
 window.title("Pomodoro")
@@ -59,14 +88,17 @@ userLabel = tk.Label(text="Email/Username").grid(row=2)
 passLabel = tk.Label(text="Password:").grid(row=3)
 
 # Entries
-websiteEntry = tk.Entry(width=35)
-websiteEntry.grid(column=1,row=1,columnspan=2, sticky="EW")
+websiteEntry = tk.Entry(width=18)
+websiteEntry.grid(column=1,row=1, sticky="EW")
 websiteEntry.focus()
 userEntry = tk.Entry(width=35)
 userEntry.grid(column=1,row=2,columnspan=2, sticky="EW")
-passEntry = tk.Entry(width=21)
+userEntry.insert(0,EMAIL)
+passEntry = tk.Entry(width=18)
 passEntry.grid(column=1,row=3, sticky="EW")
 # Buttons
+searchPassButton = tk.Button(text="Search", command=searchPass)
+searchPassButton.grid(column=2,row=1, sticky="EW")
 genPassButton = tk.Button(text="Generate Password", command=genPass)
 genPassButton.grid(column=2,row=3, sticky="EW")
 addPassButton = tk.Button(text="Add", width=36, command=savePass)
