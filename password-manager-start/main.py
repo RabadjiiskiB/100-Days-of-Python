@@ -1,9 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
+import os
 import json
 
 EMAIL = "rabadjiiskib@gmail.com"
+path = "/media/borko/Don_t Touch"
+file_path = os.path.join(path, "passwords.json")
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def genPass():
 
@@ -46,26 +49,30 @@ def savePass():
         toSave = messagebox.askokcancel(title=website, message=f"These are the details: \nEmail: {email} \nPassword: {password} \nIs it ok to save?")
         if toSave:
             try:
-                with open("passwords.json", "r") as f:
+                os.makedirs(path, exist_ok=True)
+
+                if not os.path.exists(file_path):
+                    with open(file_path, "w") as f:
+                        json.dump({}, f)
+
+                with open(file_path, "r") as f:
                     data = json.load(f)
-                    data.update(new_data)
-            except FileNotFoundError:
-                with open("passwords.json", "w") as f:
-                    json.dump(new_data, f, indent=4)
-                    websiteEntry.delete(0, 'end')
-                    passEntry.delete(0, 'end')
-            else:
-                with open("passwords.json", "w") as f:
+
+                data.update(new_data)
+                with open(file_path, "w") as f:
                     json.dump(data, f, indent=4)
-                    websiteEntry.delete(0, 'end')
-                    passEntry.delete(0, 'end')
+
+                websiteEntry.delete(0, 'end')
+                passEntry.delete(0, 'end')
+            except Exception as e:
+                messagebox.showerror(title="Error", message=f"An error occurred: {e}")
 
 # ---------------------------- PASSWORD SEARCH ------------------------------- #
 def searchPass():
     website = websiteEntry.get()
     email = userEntry.get()
     try:
-        with open("passwords.json", "r") as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
             try:
                 messagebox.askokcancel(title=website, message=f"These are the details: \nEmail: {data[website]['email']} \nPassword: {data[website]['password']}")
